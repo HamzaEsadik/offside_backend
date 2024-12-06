@@ -11,8 +11,11 @@ Route::get('/leagues', [LeaguesController::class, 'leagues']);
 // Get top 10 leagues fixtures: Live scores
 Route::get('topLeaguesFixtures/{date}', [FixturesController::class, 'topLeaguesFixtures']);
 
-// Get 10 news
+// Get 5 news
 Route::get('/news', [NewsController::class, 'news']);
+
+// Get 5 league news
+Route::get('/news/{id}', [NewsController::class, 'leagueNews']);
 
 // Get League name and logo
 Route::get('/league/{id}', [LeaguesController::class, 'league']);
