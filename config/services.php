@@ -18,6 +18,12 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
+    'api' => [
+        'base_url' => env('API_BASE_URL'),
+        'api_key' => env('API_KEY'),
+        'api_host' => env('API_HOST'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
