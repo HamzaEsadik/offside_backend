@@ -82,16 +82,37 @@ class LeaguesController extends Controller
     }
 
     //return league statisctics
-    public function statistics($id): JsonResponse
+    public function goals($id): JsonResponse
     {
         try {
             $goals = $this->apiService->fetchSomething('football-get-top-players-by-goals', [
                 'leagueid' => $id,
             ]);
+    
+            $formattedGoals = array_map(function ($player) {
+                return [
+                    'id' => $player['id'],
+                    'name' => $player['name'],
+                    'teamId' => $player['teamId'],
+                    'teamName' => $player['teamName'],
+                    'goals' => $player['goals'],
+                ];
+            }, $goals['response']['players'] ?? []);
+
+            return response()->json($formattedGoals, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Unable to fetch data',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    //return league statisctics
+    public function assists($id): JsonResponse
+    {
+        try {
             $assists = $this->apiService->fetchSomething('football-get-top-players-by-assists', [
-                'leagueid' => $id,
-            ]);
-            $rating = $this->apiService->fetchSomething('football-get-top-players-by-rating', [
                 'leagueid' => $id,
             ]);
 
@@ -104,16 +125,23 @@ class LeaguesController extends Controller
                     'assists' => $player['assists'],
                 ];
             }, $assists['response']['players'] ?? []);
-    
-            $formattedGoals = array_map(function ($player) {
-                return [
-                    'id' => $player['id'],
-                    'name' => $player['name'],
-                    'teamId' => $player['teamId'],
-                    'teamName' => $player['teamName'],
-                    'goals' => $player['goals'],
-                ];
-            }, $goals['response']['players'] ?? []);
+
+            return response()->json($formattedAssists, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Unable to fetch data',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    //return league statisctics
+    public function rating($id): JsonResponse
+    {
+        try {
+            $rating = $this->apiService->fetchSomething('football-get-top-players-by-rating', [
+                'leagueid' => $id,
+            ]);
     
             $formattedRating = array_map(function ($player) {
                 return [
@@ -124,14 +152,8 @@ class LeaguesController extends Controller
                     'rating' => $player['rating'],
                 ];
             }, $rating['response']['players'] ?? []);
-    
-            $response = [
-                'assists' => $formattedAssists,
-                'goals' => $formattedGoals,
-                'rating' => $formattedRating,
-            ];
 
-            return response()->json($response, 200);
+            return response()->json($formattedRating, 200);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Unable to fetch data',

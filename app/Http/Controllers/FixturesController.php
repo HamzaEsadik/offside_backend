@@ -16,54 +16,70 @@ class FixturesController extends Controller
 
     //list of top leagues fixtures
     public function topLeaguesFixtures($date): JsonResponse
-    {
-        $leagues_ids = [47, 42, 87, 54, 73, 53, 55, 536];
-        $results = [];
+{
+    $leagues_ids = [47, 42, 87, 54, 73, 53, 55, 536];
+    $results = [];
 
-        try {
-            $data = $this->apiService->fetchSomething('football-get-matches-by-date', [
-                'date' => $date,
-            ]);
+    try {
+        $data = $this->apiService->fetchSomething('football-get-matches-by-date', [
+            'date' => $date,
+        ]);
 
-            foreach ($leagues_ids as $league_id) {
-                $filteredMatches = array_filter($data['response']['matches'], function ($match) use ($league_id) {
-                    return $match['leagueId'] == $league_id;
-                });
+        $matches = $data['response']['matches'];
 
-                $transformedMatches = array_map(function ($match) {
-                    return [
-                        'id' => $match['id'],
-                        'time' => $match['time'],
-                        'home' => [
-                            'id' => $match['home']['id'],
-                            'score' => $match['home']['score'],
-                            'name' => $match['home']['name'],
-                        ],
-                        'away' => [
-                            'id' => $match['away']['id'],
-                            'score' => $match['away']['score'],
-                            'name' => $match['away']['name'],
-                        ],
-                        'started' => $match['status']['started'],
-                        'finished' => $match['status']['finished'],
-                        'cancelled' => $match['status']['cancelled'],
-                    ];
-                }, $filteredMatches);
-    
-                $results[] = [
-                    'leagueid' => $league_id,
-                    'data' => array_values($transformedMatches),
-                ];
+        // Group matches by league
+        $groupedMatches = [];
+        foreach ($matches as $match) {
+            $leagueId = $match['leagueId'];
+            if (!isset($groupedMatches[$leagueId])) {
+                $groupedMatches[$leagueId] = [];
             }
-
-            return response()->json($results, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Unable to fetch data',
-                'message' => $e->getMessage(),
-            ], 500);
+            $groupedMatches[$leagueId][] = [
+                'id' => $match['id'],
+                'time' => $match['time'],
+                'home' => [
+                    'id' => $match['home']['id'],
+                    'score' => $match['home']['score'],
+                    'name' => $match['home']['name'],
+                ],
+                'away' => [
+                    'id' => $match['away']['id'],
+                    'score' => $match['away']['score'],
+                    'name' => $match['away']['name'],
+                ],
+                'started' => $match['status']['started'],
+                'finished' => $match['status']['finished'],
+                'cancelled' => $match['status']['cancelled'],
+            ];
         }
+
+        // Arrange results with leagues_ids first, followed by other leagues
+        foreach ($leagues_ids as $leagueId) {
+            if (isset($groupedMatches[$leagueId])) {
+                $results[] = [
+                    'leagueid' => $leagueId,
+                    'data' => $groupedMatches[$leagueId],
+                ];
+                unset($groupedMatches[$leagueId]);
+            }
+        }
+
+        // Add remaining leagues
+        foreach ($groupedMatches as $leagueId => $matches) {
+            $results[] = [
+                'leagueid' => $leagueId,
+                'data' => $matches,
+            ];
+        }
+
+        return response()->json($results, 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Unable to fetch data',
+            'message' => $e->getMessage(),
+        ], 500);
     }
+}
 
     //return the today fixture of a league
     public function todayFixture($id, $date): JsonResponse
@@ -95,7 +111,7 @@ class FixturesController extends Controller
                     'finished' => $match['status']['finished'],
                     'cancelled' => $match['status']['cancelled'],
                 ];
-            }, $filteredMatches);
+            }, array_values($filteredMatches));
 
             return response()->json($formattedMatches, 200);
         } catch (\Exception $e) {

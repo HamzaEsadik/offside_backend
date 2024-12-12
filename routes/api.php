@@ -27,8 +27,10 @@ Route::get('/league/{id}/nextfixtures/{date}', [FixturesController::class, 'fixt
 // Get Table of a League: Competition Standings
 Route::get('/league/{id}/table', [LeaguesController::class, 'table']);
 
-//  Get Statictics of a leaugue (top rating / scoring / assists / yellow cards / red cards)
-Route::get('/league/{id}/statistics', [LeaguesController::class, 'statistics']);
+//  Get Statictics of a leaugue (top rating / scoring / assists)
+Route::get('/league/{id}/goals', [LeaguesController::class, 'goals']);
+Route::get('/league/{id}/assists', [LeaguesController::class, 'assists']);
+Route::get('/league/{id}/rating', [LeaguesController::class, 'rating']);
 
 // Get Match details
 Route::get('/match/{id}', [FixturesController::class, 'match']);
