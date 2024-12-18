@@ -270,7 +270,7 @@ class FixturesController extends Controller
                 'eventid' => $id,
             ]);
 
-            $awayteam = $this->apiService->fetchSomething('football-get-hometeam-lineup', [
+            $awayteam = $this->apiService->fetchSomething('football-get-awayteam-lineup', [
                 'eventid' => $id,
             ]);
 
